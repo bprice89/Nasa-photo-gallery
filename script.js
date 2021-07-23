@@ -12,8 +12,9 @@ const apiUrl = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=${co
 let resultsArray =[];
 let favorites = {};
 
-function createDOM() {
-    resultsArray.forEach((result) => {
+function createDOM(page) {
+    const currentArray = page === 'results' ? resultsArray : Object.values(favorites);
+    currentArray.forEach((result) => {
         const card = document.createElement('div');      //using results array and populating new Html elements, created div for picture gallery
         card.classList.add('card');                  //add class to div element
        
@@ -37,8 +38,13 @@ function createDOM() {
 
         const saveText = document.createElement('p');         //add ability to save to favorites
         saveText.classList.add('clickable');
-        saveText.textContent = 'Add To Favorites';
-        saveText.setAttribute('onclick', `saveFavorite('${result.url}')`);
+        if (page === 'results') {
+            saveText.textContent = 'Add To Favorites';
+            saveText.setAttribute('onclick', `saveFavorite('${result.url}')`);
+        }else {
+            saveText.textContent = 'Remove Favorite';
+            saveText.setAttribute('onclick', `removeFavorite('${result.url}')`); //ability to remove favorites
+        }
 
         const cardText = document.createElement('p');
         cardText.textContent = result.explanation;        //add image explantation
@@ -61,8 +67,12 @@ function createDOM() {
     });
 }
 
-function updateDom() {
-    
+function updateDom(page) {
+    if (localStorage.getItem('nasaFavorites')) {
+        favorites = JSON.parse(localStorage.getItem('nasaFavorites'));    //parse data from local storage
+    }
+    imagesConatiner.textContent = '';
+    createDOM(page);
 }
 
 // Fetch 10 images from API using async
@@ -70,8 +80,7 @@ async function getNasaPictures() {
     try {
         const response = await fetch(apiUrl);
         resultsArray = await response.json();     //converts API response into json form
-        console.log(resultsArray);
-        updateDom();
+        updateDom('results');
     } catch (error) {               // catch error if fetch doesnt work
         console.log(error)
     }
@@ -89,6 +98,14 @@ function saveFavorite(itemUrl) {
             localStorage.setItem('nasaFavorites', JSON.stringify(favorites));         //save to local storage
         }
     });
+}
+
+function removeFavorite(itemUrl) {                 //remove favorites from favorites page
+    if (favorites[itemUrl]) {
+        delete favorites[itemUrl];
+        localStorage.setItem('nasaFavorites', JSON.stringify(favorites));
+        updateDom('favorites');
+    }
 }
 
 
