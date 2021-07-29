@@ -117,7 +117,7 @@ html {
   }
   
   
-  /* Large Smartphone (Vertical) */
+  /* Smartphone (Vertical) */
   @media screen and (max-width: 800px) {
     body {
       line-height: 1.4rem;
